@@ -1,5 +1,5 @@
 FROM debian:jessie
-COPY ./nginx-1.13.6/obj/nginx /bin/
+COPY /tmp/nginx /bin/
 RUN mkdir -p /etc/nginx/
 COPY nginx.conf /etc/nginx/
 RUN mkdir /var/www/doc/
