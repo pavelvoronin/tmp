@@ -1,0 +1,23 @@
+{
+"taskDefinition": {
+    "volumes": [],
+    "taskDefinitionArn": "arn:aws:ecs:us-east-1:123456789012:task-definition/nginx-lua:1",
+    "containerDefinitions": [
+        {
+            "name": "nginx-lua",
+            "image": "your-repository/nginx-lua:latest",
+            "cpu": 10,
+            "portMappings": [
+                {
+                    "containerPort": 80,
+                    "hostPort": 80
+                }
+            ],
+            "memory": 256,
+            "essential": true
+        }
+    ],
+    "family": "nginx-lua",
+    "revision": 1
+}
+}

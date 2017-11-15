@@ -1,0 +1,43 @@
+stage('Compile nginx sources'){
+    node('master'){
+        cleanWs()
+        sh "wget https://nginx.org/download/nginx-1.13.6.tar.gz"
+        sh "tar xfz nginx-1.13.6.tar.gz"
+        sh "wget https://github.com/openresty/lua-nginx-module/archive/v0.10.11.tar.gz"
+        sh "tar xfz v0.10.11.tar.gz"
+        sh "wget https://github.com/simpl/ngx_devel_kit/archive/v0.3.0.tar.gz"
+        sh "tar xfz v0.3.0.tar.gz"
+        dir('nginx-1.13.6'){
+            sh "./configure  --without-http_gzip_module --add-module=../ngx_devel_kit-0.3.0 --conf-path=/etc/nginx/nginx.conf --prefix=/etc/nginx --conf-path=/etc/nginx/nginx.conf" //and other params
+            sh "make -j2"
+            sh "copy ./nginx-1.13.6/obj/nginx /tmp/"
+        }
+    }
+}
+stage('Dockerize'){
+    node('master'){
+
+    def image
+
+    stage('Clone repository') {
+        git credentialsId: '0608891a-d6d8-4ead-a3b0-7a369729c3b3', url: 'https://github.com/pavelvoronin/tmp.git'
+    }
+
+    stage('Build image') {
+
+        image = docker.build("regestry/nginx-lua")
+    }
+
+    stage('Push image') {
+        docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+            image.push("${env.BUILD_NUMBER}")
+            image.push("latest")
+        }
+    }
+}
+}
+stage('Deploy'){
+    node('master'){
+        sh "aws ecs register-task-definition --cli-input-json file://nginx-lua.json"
+    }
+}
